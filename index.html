@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>유전 정보 활용과 생명 윤리 - 직소 토론</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* 사용자 정의 스타일 */
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            scroll-behavior: smooth;
+            background-color: #0b132b; /* 기본 배경색을 어둡게 설정 */
+            color: white;
+        }
+        /* DNA 배경 캔버스 스타일 */
+        #dna-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0; /* 콘텐츠 뒤에 위치 */
+        }
+        .scroll-snap-container {
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            height: 100vh;
+            position: relative;
+            z-index: 1; /* 캔버스 위에 위치 */
+        }
+        .scroll-section {
+            scroll-snap-align: start;
+            min-height: 100vh;
+            height: auto;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            position: relative;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        /* 페이드인 애니메이션 */
+        .fade-in {
+            animation: fadeInAnimation 1.5s ease-in-out forwards;
+            opacity: 0;
+        }
+        .fade-in-delay-1 { animation-delay: 0.5s; }
+        .fade-in-delay-2 { animation-delay: 1s; }
+        .fade-in-delay-3 { animation-delay: 1.5s; }
+        .fade-in-delay-4 { animation-delay: 2s; }
+
+        @keyframes fadeInAnimation {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 배경 그라데이션 및 투명도 설정 */
+        .bg-transparent-dark { background: transparent; }
+        .bg-gradient-2 { background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%); color: #2d3748; }
+        
+        .light-card {
+             background-color: rgba(255, 255, 255, 0.8);
+             backdrop-filter: blur(10px);
+        }
+
+        /* 스크롤 인디케이터 */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            animation: bounce 2s infinite;
+        }
+        .scroll-indicator.dark {
+            color: #1c2541;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        /* 인터랙티브 카드 스타일 */
+        .card-container {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+        .card-container.is-flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            border-radius: 1rem;
+        }
+        .card-front {
+            background-color: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .card-back {
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="dna-background"></canvas>
+    <div class="scroll-snap-container">
+
+        <!-- 슬라이드 1: 도입 및 동기 유발 -->
+        <section id="intro" class="scroll-section bg-transparent-dark">
+            <h1 class="text-5xl md:text-7xl font-black mb-4 fade-in">유전 정보의 활용과<br>생명 윤리</h1>
+            <p class="text-2xl md:text-3xl font-bold text-cyan-300 mb-8 fade-in fade-in-delay-1">나의 유전자 정보, 과연 얼마일까?</p>
+            <div class="max-w-3xl mx-auto fade-in fade-in-delay-2">
+                <p class="text-lg md:text-xl mb-4">
+                    침 한 방울로 나의 질병 가능성, 신체 특징, 조상까지 알 수 있는 시대.
+                </p>
+                <p class="text-lg md:text-xl font-bold">
+                    만약 당신의 유전자 정보를 판다면, 얼마를 받으시겠어요? <br> 그리고 그 정보는 어떻게 사용되어야 할까요?
+                </p>
+            </div>
+            <div class="scroll-indicator fade-in fade-in-delay-3">
+                <span>SCROLL DOWN</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- 슬라이드 2: 학습 목표 -->
+        <section id="goals" class="scroll-section bg-gradient-2">
+            <h2 class="text-4xl md:text-5xl font-black mb-12 fade-in">오늘 우리는 무엇을 배울까?</h2>
+            <div class="flex flex-col md:flex-row gap-8 max-w-5xl w-full">
+                <div class="flex-1 light-card p-8 rounded-2xl shadow-2xl fade-in fade-in-delay-1 transition-transform duration-300 hover:scale-105">
+                    <div class="text-6xl mb-4 text-blue-500">🎯</div>
+                    <h3 class="text-2xl font-bold mb-2">학습 목표 1</h3>
+                    <p class="text-lg">유전 공학 기술과 사람의 유전 형질을 이해하고, 이를 활용한 사례에서 나타날 수 있는 <span class="font-bold text-blue-600">과학적·사회적 쟁점을 분석</span>할 수 있다.</p>
+                </div>
+                <div class="flex-1 light-card p-8 rounded-2xl shadow-2xl fade-in fade-in-delay-2 transition-transform duration-300 hover:scale-105">
+                    <div class="text-6xl mb-4 text-green-500">✍️</div>
+                    <h3 class="text-2xl font-bold mb-2">학습 목표 2</h3>
+                    <p class="text-lg">다양한 입장에서 자신의 의견을 논리적으로 표현하고, 자유 서술형 문항을 통해 <span class="font-bold text-green-600">과학적 근거에 기반한 비판적 사고</span>를 드러낼 수 있다.</p>
+                </div>
+            </div>
+             <div class="scroll-indicator dark fade-in fade-in-delay-3">
+                <span>SCROLL DOWN</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- 슬라이드 3: 핵심 개념 설명 -->
+        <section id="dtc" class="scroll-section bg-transparent-dark">
+            <h2 class="text-4xl md:text-5xl font-black mb-4 fade-in">핵심 개념: DTC 유전자 검사란?</h2>
+            <p class="text-xl mb-12 text-gray-300 fade-in fade-in-delay-1">Direct-to-Consumer, 의료기관을 거치지 않고 소비자가 직접 받는 유전자 검사</p>
+            <div class="w-full max-w-6xl flex flex-col md:flex-row items-center justify-center gap-8">
+                <div class="flex flex-col items-center fade-in fade-in-delay-2">
+                    <div class="w-32 h-32 rounded-full bg-cyan-400 flex items-center justify-center text-5xl mb-4 transition-transform duration-300 hover:scale-110 hover:rotate-6">👤</div>
+                    <h3 class="text-xl font-bold">1. 타액 채취</h3>
+                    <p>사용자가 직접<br>검사 키트에 타액을 담는다.</p>
+                </div>
+                <div class="text-5xl text-cyan-400 self-center hidden md:block fade-in fade-in-delay-3">→</div>
+                <div class="text-5xl text-cyan-400 self-center md:hidden fade-in fade-in-delay-3">↓</div>
+                <div class="flex flex-col items-center fade-in fade-in-delay-3">
+                    <div class="w-32 h-32 rounded-full bg-cyan-400 flex items-center justify-center text-5xl mb-4 transition-transform duration-300 hover:scale-110 hover:rotate-6">🔬</div>
+                    <h3 class="text-xl font-bold">2. 유전자 분석</h3>
+                    <p>기업이 타액 속 DNA를<br>분석하여 유전 정보를 해독한다.</p>
+                </div>
+                <div class="text-5xl text-cyan-400 self-center hidden md:block fade-in fade-in-delay-4">→</div>
+                 <div class="text-5xl text-cyan-400 self-center md:hidden fade-in fade-in-delay-4">↓</div>
+                <div class="flex flex-col items-center fade-in fade-in-delay-4">
+                    <div class="w-32 h-32 rounded-full bg-cyan-400 flex items-center justify-center text-5xl mb-4 transition-transform duration-300 hover:scale-110 hover:rotate-6">📊</div>
+                    <h3 class="text-xl font-bold">3. 결과 확인</h3>
+                    <p>웹/앱을 통해 질병 가능성, <br>신체 특징 등 결과를 받는다.</p>
+                </div>
+            </div>
+             <div class="scroll-indicator fade-in">
+                <span>SCROLL DOWN</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- 슬라이드 4: 직소 활동 안내 -->
+        <section id="jigsaw-intro" class="scroll-section bg-gradient-2">
+            <h2 class="text-4xl md:text-5xl font-black mb-4 fade-in">직소(Jigsaw) 모둠 토론</h2>
+            <p class="text-2xl font-bold text-indigo-600 mb-10 fade-in fade-in-delay-1">DTC 유전자 검사, 개인의 자유일까? 사회적 책임이 따를까?</p>
+            <div class="w-full max-w-5xl light-card p-8 rounded-2xl shadow-xl fade-in fade-in-delay-2">
+                <h3 class="text-2xl font-bold text-center mb-6">활동 방법</h3>
+                <ol class="list-decimal list-inside space-y-4 text-lg text-left">
+                    <li><span class="font-bold">원모둠(4인 1조)</span>에서 각자 전문가 역할을 하나씩 맡습니다. (소비자, 기업, 윤리전문가, 정부)</li>
+                    <li>같은 역할을 맡은 학생들끼리 <span class="font-bold text-red-600">전문가 모둠</span>으로 이동하여 자신의 입장을 정리하고 토론 근거를 마련합니다. (아래 슬라이드의 카드를 뒤집어 핵심 질문을 확인하세요!)</li>
+                    <li>다시 <span class="font-bold">원모둠</span>으로 돌아와, 각자 전문가 입장에서 발표하고 최종 결론을 도출하기 위한 토론을 진행합니다.</li>
+                </ol>
+            </div>
+             <div class="scroll-indicator dark fade-in fade-in-delay-3">
+                <span>SCROLL DOWN</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- 슬라이드 5: 전문가 집단별 임무 -->
+        <section id="expert-roles" class="scroll-section bg-transparent-dark">
+            <div class="w-full">
+                <h2 class="text-4xl md:text-5xl font-black mb-4 fade-in">전문가 집단별 임무 카드</h2>
+                <p class="text-lg text-gray-300 mb-10 fade-in fade-in-delay-1">카드를 클릭(터치)하여 뒤집고, 토론의 핵심 질문을 확인해보세요!</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl mx-auto">
+                    <!-- 카드들... (이전과 동일) -->
+                    <div class="card-container h-80 fade-in fade-in-delay-1">
+                        <div class="card-inner">
+                            <div class="card-face card-front border-blue-400 border-2">
+                                <div class="text-5xl mb-4">🛒</div>
+                                <h3 class="text-2xl font-bold text-blue-300 mb-4">소비자</h3>
+                                <p class="font-bold mb-4">"내 몸 정보, 내가 알고 싶어요!"</p>
+                                <p class="text-left text-sm space-y-2">
+                                    - 알 권리: 질병 예측, 맞춤형 건강관리
+                                    <br>- 편리함: 병원 방문 없이 검사
+                                    <br>- 불안감: 정보 유출 및 악용 우려
+                                    <br>- 신뢰성: 검사 결과의 정확도?
+                                </p>
+                            </div>
+                            <div class="card-face card-back border-blue-400 border-2">
+                                <h4 class="text-xl font-bold mb-4 text-blue-300">토론 질문</h4>
+                                <ul class="text-left space-y-3">
+                                    <li>🤔 내 유전 정보가 다른 회사에 팔린다면?</li>
+                                    <li>🤔 잘못된 결과가 나오면 누구 책임인가요?</li>
+                                    <li>🤔 검사 결과를 가족에게 알려야 할까요?</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-container h-80 fade-in fade-in-delay-2">
+                        <div class="card-inner">
+                            <div class="card-face card-front border-green-400 border-2">
+                                <div class="text-5xl mb-4">🏢</div>
+                                <h3 class="text-2xl font-bold text-green-300 mb-4">기업</h3>
+                                <p class="font-bold mb-4">"새로운 시장, 무한한 가능성!"</p>
+                                <p class="text-left text-sm space-y-2">
+                                    - 미래 산업: 바이오/헬스케어 시장 동력
+                                    <br>- 기술 혁신: R&D 통한 기술 개발
+                                    <br>- 이윤 추구: 기업 성장, 일자리 창출
+                                    <br>- 규제 완화: 자유로운 연구 환경 필요
+                                </p>
+                            </div>
+                            <div class="card-face card-back border-green-400 border-2">
+                                <h4 class="text-xl font-bold mb-4 text-green-300">토론 질문</h4>
+                                <ul class="text-left space-y-3">
+                                    <li>🤔 어디까지 검사 항목을 허용해야 할까요?</li>
+                                    <li>🤔 해킹으로 정보가 유출되면 어떻게 대응할 건가요?</li>
+                                    <li>🤔 유전자 정보 빅데이터는 어떻게 활용할 수 있을까요?</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-container h-80 fade-in fade-in-delay-3">
+                        <div class="card-inner">
+                            <div class="card-face card-front border-yellow-400 border-2">
+                                <div class="text-5xl mb-4">⚖️</div>
+                                <h3 class="text-2xl font-bold text-yellow-300 mb-4">윤리전문가</h3>
+                                <p class="font-bold mb-4">"판도라의 상자가 될 수 있습니다."</p>
+                                <p class="text-left text-sm space-y-2">
+                                    - 유전적 차별: 취업, 보험 등 불이익
+                                    <br>- 생명 존엄성: 유전 정보로 인간 서열화
+                                    <br>- 사회적 불평등: 정보 격차 심화
+                                    <br>- 낙인 효과: 특정 유전자에 대한 편견
+                                </p>
+                            </div>
+                            <div class="card-face card-back border-yellow-400 border-2">
+                                <h4 class="text-xl font-bold mb-4 text-yellow-300">토론 질문</h4>
+                                <ul class="text-left space-y-3">
+                                    <li>🤔 유전 정보에 따른 차별을 막을 방법은?</li>
+                                    <li>🤔 아직 태어나지 않은 아이의 유전자 검사는?</li>
+                                    <li>🤔 모든 사람이 자신의 유전 정보를 알아야만 할까요?</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-container h-80 fade-in fade-in-delay-4">
+                        <div class="card-inner">
+                            <div class="card-face card-front border-red-400 border-2">
+                                <div class="text-5xl mb-4">🏛️</div>
+                                <h3 class="text-2xl font-bold text-red-300 mb-4">정부</h3>
+                                <p class="font-bold mb-4">"국민 건강과 산업 발전, 균형이 중요합니다."</p>
+                                <p class="text-left text-sm space-y-2">
+                                    - 국민 건강 증진: 질병 예방 및 관리
+                                    <br>- 산업 발전 지원: 신성장 동력 육성
+                                    <br>- 제도 마련: 정보 보호, 안전성 확보
+                                    <br>- 사회적 합의: 국민적 공감대 형성
+                                </p>
+                            </div>
+                            <div class="card-face card-back border-red-400 border-2">
+                                <h4 class="text-xl font-bold mb-4 text-red-300">토론 질문</h4>
+                                <ul class="text-left space-y-3">
+                                    <li>🤔 산업 육성과 국민 보호, 어떤 가치가 우선일까요?</li>
+                                    <li>🤔 검사 결과의 정확도를 관리할 방법은?</li>
+                                    <li>🤔 유전자 정보 활용에 대한 법은 어떻게 만들어야 할까요?</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="scroll-indicator fade-in">
+                <span>SCROLL DOWN</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- 슬라이드 6: 원모둠 토론 및 최종 정리 -->
+        <section id="debate" class="scroll-section bg-gradient-2">
+            <h2 class="text-4xl md:text-5xl font-black mb-6 fade-in">원모둠 토론 및 최종 입장 정리</h2>
+            <div class="max-w-4xl w-full light-card p-10 rounded-2xl shadow-2xl fade-in fade-in-delay-1">
+                <h3 class="text-2xl font-bold mb-6">토론 가이드</h3>
+                <ol class="space-y-4 text-lg text-left">
+                    <li class="flex items-start">
+                        <span class="font-bold text-blue-600 mr-3">STEP 1.</span>
+                        <div><span class="font-bold">역할별 발표:</span> 각 전문가가 자신의 입장을 1분씩 발표하며 토론의 쟁점을 확인합니다.</div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="font-bold text-green-600 mr-3">STEP 2.</span>
+                        <div><span class="font-bold">자유 토론:</span> 서로의 근거를 반박하거나 질문하며, 우리 모둠의 잠정적인 결론을 도출합니다.</div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="font-bold text-red-600 mr-3">STEP 3.</span>
+                        <div><span class="font-bold">최종 입장 정리:</span> 토론을 바탕으로 'DTC 유전자 검사'에 대한 자신의 최종 입장을 정리합니다.</div>
+                    </li>
+                </ol>
+            </div>
+             <div class="scroll-indicator dark fade-in fade-in-delay-2">
+                <span>SCROLL DOWN</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
+        </section>
+
+        <!-- 슬라이드 7: 평가 (서술형 문항 작성) -->
+        <section id="evaluation" class="scroll-section bg-transparent-dark">
+            <h2 class="text-4xl md:text-5xl font-black mb-6 fade-in">최종 생각 정리하기</h2>
+            <div class="w-full max-w-4xl light-card bg-black bg-opacity-25 p-10 rounded-2xl shadow-2xl fade-in fade-in-delay-1">
+                <h3 class="text-2xl font-bold mb-4 text-white">서술형 문항</h3>
+                <p class="text-lg bg-gray-900 bg-opacity-50 p-6 rounded-lg text-left">
+                    "DTC 유전자 검사를 이용하는 것은 개인의 자유일까, 아니면 사회적 책임이 따르는 문제일까?"
+                    <br><br>
+                    오늘의 토론과 학습 내용을 바탕으로, 자신의 최종 입장을 <span class="font-bold text-cyan-300">과학적 근거와 윤리적/사회적 측면</span>을 모두 고려하여 논리적으로 서술하시오.
+                </p>
+            </div>
+            <p class="mt-8 text-gray-400 fade-in fade-in-delay-2">수고 많으셨습니다!</p>
+        </section>
+
+    </div>
+
+    <script>
+        // 카드 뒤집기 스크립트
+        const cards = document.querySelectorAll('.card-container');
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                card.classList.toggle('is-flipped');
+            });
+        });
+
+        // DNA 배경 애니메이션 스크립트
+        const canvas = document.getElementById('dna-background');
+        const ctx = canvas.getContext('2d');
+
+        let animationFrameId;
+
+        function setupCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            ctx.fillStyle = '#0b132b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        const bases = ['A', 'T', 'G', 'C'];
+        const fontSize = 16;
+        let columns = 0;
+        let drops = [];
+
+        function initializeMatrix() {
+            columns = Math.floor(canvas.width / fontSize);
+            drops = [];
+            for (let x = 0; x < columns; x++) {
+                drops[x] = 1 + Math.random() * canvas.height;
+            }
+        }
+
+        function draw() {
+            // 배경을 반투명하게 덮어 잔상 효과 생성
+            ctx.fillStyle = 'rgba(11, 19, 43, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00f4d0'; // 염기서열 색상 (민트색)
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = bases[Math.floor(Math.random() * bases.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // 염기서열이 화면 아래로 내려가면 다시 위로 올림 (랜덤 요소 추가)
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        function animate() {
+            draw();
+            animationFrameId = requestAnimationFrame(animate);
+        }
+
+        function resetAnimation() {
+            cancelAnimationFrame(animationFrameId);
+            setupCanvas();
+            initializeMatrix();
+            animate();
+        }
+
+        window.addEventListener('resize', resetAnimation);
+
+        // 초기 실행
+        resetAnimation();
+
+    </script>
+</body>
+</html>
